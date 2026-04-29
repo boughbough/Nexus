@@ -1,16 +1,90 @@
-# React + Vite
+# 🦊 Nexus — L'Instinct de la Communication
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Nexus Banner](https://images.unsplash.com/photo-1614850523296-d8c1af93d400?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80)
 
-Currently, two official plugins are available:
+> **Nexus** est une plateforme de messagerie instantanée moderne, fluide et hautement sécurisée. Conçue pour offrir une alternative élégante et rapide aux outils de communication actuels, elle combine la puissance de React et de Supabase pour une expérience utilisateur sans compromis.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Fonctionnalités Clés
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 💬 Communication & Social
+- **Real-time Messaging** : Discussion instantanée avec mise à jour en direct via Supabase Realtime.
+- **Gestion de Serveurs** : Créez vos propres espaces et organisez-les avec des salons thématiques.
+- **Partage Multimédia** : Envoi d'images, intégration de GIFs via Giphy et gestion d'avatars personnalisés.
+- **Quick Switcher** : Navigation ultra-rapide entre les serveurs et les messages privés.
 
-## Expanding the ESLint configuration
+### 🛡️ Sécurité & Protection
+- **Authentification Sécurisée** : Système robuste géré par Supabase Auth.
+- **Protection Anti-Bots** : Intégration complète de **hCaptcha** sur les flux de connexion et d'inscription.
+- **Force du Mot de Passe** : Validation dynamique (8+ caractères, majuscules, chiffres, caractères spéciaux).
+- **Zone de Danger** : Possibilité pour l'utilisateur de supprimer son compte et toutes ses données définitivement.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 🎨 Design & Personnalisation
+- **Multi-Thèmes** : Choisissez votre ambiance (Dark, Light, Cyberpunk, etc.) grâce à DaisyUI.
+- **Interface Adaptive** : Entièrement responsive, de l'ordinateur de bureau au smartphone.
+- **Micro-interactions** : Animations fluides et toasts de notification pour une UX premium.
+
+---
+
+## 📸 Aperçu de l'Interface (Démos)
+
+| Inscription Sécurisée (hCaptcha) | Messagerie en Temps Réel |
+| :--- | :--- |
+| ![Démo Inscription](./screens/login.gif) | ![Démo Chat Live](./screens/chat-live.gif) |
+
+| Paramètres & Thèmes | Navigation Rapide (Quick Switcher) |
+| :--- | :--- |
+| ![Démo Paramètres](./screens/settings.gif) | ![Démo Switcher](./screens/quick-switcher.gif) |
+
+---
+
+## 🚀 Technologies Utilisées
+
+| Secteur | Technologie |
+| :--- | :--- |
+| **Frontend** | [React.js](https://reactjs.org/) + [Vite](https://vitejs.dev/) |
+| **Styling** | [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/) |
+| **Backend / DB** | [Supabase](https://supabase.com/) (PostgreSQL & Realtime) |
+| **Sécurité** | [hCaptcha](https://www.hcaptcha.com/) |
+| **Icônes** | [Lucide React](https://lucide.dev/) |
+| **Déploiement** | [Vercel](https://vercel.com/) |
+
+---
+
+## 🛠️ Installation et Lancement
+
+### 1. Pré-requis
+Assurez-vous d'avoir [Node.js](https://nodejs.org/) installé sur votre machine.
+
+### 2. Clonage et Dépendances
+```bash
+git clone https://github.com/votre-pseudo/nexus.git
+cd nexus
+npm install
+```
+
+### 3. Configuration des Variables d'Environnement
+Créez un fichier `.env` à la racine du projet et ajoutez vos clés :
+```env
+VITE_SUPABASE_URL=votre_url_supabase
+VITE_SUPABASE_ANON_KEY=votre_cle_anon
+VITE_GIPHY_KEY=votre_cle_giphy
+VITE_HCAPTCHA_SITE_KEY=votre_cle_publique_hcaptcha
+```
+
+### 4. Démarrage
+Lancez le serveur de développement local :
+```bash
+npm run dev
+```
+
+---
+
+## 📝 Licence
+
+Ce projet est sous licence MIT. Libre à vous de l'utiliser et de le modifier.
+
+---
+
+### 🦊 Développé avec passion par [Ton Nom/Pseudo]
