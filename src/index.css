@@ -1,0 +1,140 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light, dark, cupcake, synthwave, retro, cyberpunk, dracula, night, dim;
+}
+
+*, *::before, *::after {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.2s ease,
+    box-shadow 0.3s ease;
+}
+
+[class*="animate-"] {
+  transition: none !important;
+}
+
+@keyframes messageSlideSoft {
+  0% { 
+    opacity: 0; 
+    transform: translateY(12px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.animate-message {
+  animation: messageSlideSoft 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes whirl-outer {
+  0% {
+    transform: perspective(400px) rotateY(0deg) rotateX(0deg);
+  }
+  25% {
+    transform: perspective(400px) rotateY(180deg) rotateX(15deg);
+  }
+  50% {
+    transform: perspective(400px) rotateY(360deg) rotateX(-15deg);
+  }
+  75% {
+    transform: perspective(400px) rotateY(540deg) rotateX(15deg);
+  }
+  100% {
+    transform: perspective(400px) rotateY(720deg) rotateX(0deg);
+  }
+}
+
+@keyframes whirl-inner {
+  0% {
+    transform: rotateZ(0deg) scale(1);
+  }
+  100% {
+    transform: rotateZ(-1080deg) scale(1.05);
+  }
+}
+
+.whirl-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px; 
+  height: 48px;
+  border-radius: 12px;
+  background-color: #f0f2f5; 
+  overflow: visible;
+  
+  transition: all 0.3s ease-out;
+}
+
+.whirl-container:hover {
+  background-color: #337ab7;
+  border-radius: 50%; 
+  
+ 
+  animation: whirl-outer 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
+  
+  will-change: transform;
+}
+
+.inner-icon {
+  font-size: 24px;
+  color: #555;
+  transition: all 0.3s ease-out;
+}
+
+.whirl-container:hover .inner-icon {
+  color: #fff; 
+  
+  animation: whirl-inner 1.2s linear infinite;
+  will-change: transform;
+}
+
+button, .btn, [role="button"] {
+  cursor: pointer !important;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--fallback-b3,oklch(var(--b3))); 
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--fallback-bc,oklch(var(--bc)/0.2));
+}
+
+button, .btn, .select-none, img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+
+:focus-visible {
+  outline: 2px solid oklch(var(--p));
+  outline-offset: 2px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.4);
+}
