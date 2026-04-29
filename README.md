@@ -3,13 +3,14 @@
   <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand gestures/Eye.png" alt="Fox" width="70" />
   <h1>N E X U S</h1>
   
-  <p><b>L'instinct de la communication. Fluide. Rapide. Sécurisé.</b></p>
+  <p><b>L'instinct de la communication. 
+    <br />Simple . Fluide . Sécurisé . </b></p>
 
   <p>
-    <img src="https://img.shields.io/badge/Statut-En_Ligne-2EA043?style=for-the-badge" alt="Statut En Ligne" />
-    <img src="https://img.shields.io/badge/Déployé_sur-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel Status" />
+    <a href="#"><img src="https://img.shields.io/badge/Statut-En_Ligne-2EA043?style=for-the-badge" alt="Statut En Ligne" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/Déployé_sur-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel Status" /></a>
     <a href="https://nexus-dusky-alpha.vercel.app"><img src="https://img.shields.io/badge/🔥_Démo_Live-Lancer_Nexus-FF4500?style=for-the-badge" alt="Live Demo" /></a>
-    <img src="https://img.shields.io/badge/Licence-MIT-1A1A1A?style=for-the-badge&logo=github&logoColor=white" alt="License: MIT" />
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/Licence-MIT-1A1A1A?style=for-the-badge&logo=github&logoColor=white" alt="License: MIT" /></a>
   </p>
 
   <br />
@@ -20,7 +21,8 @@
 
   <br /><br />
 
-  <h2><a href="https://nexus-dusky-alpha.vercel.app">🚀 Lancer l'expérience Nexus maintenant</a></h2>
+  <h2><a href="https://nexus-dusky-alpha.vercel.app"> Essayer maintenant</a></h2>
+  <br />
 
   <p><i>Propulsé par les meilleures technologies web</i></p>
 
