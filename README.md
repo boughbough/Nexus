@@ -1,9 +1,41 @@
 <div align="center">
-  <h1>🦊 Nexus — L'Instinct de la Communication</h1>
-  <img src="./screens/landing.png" alt="Nexus Banner" width="100%">
+
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand gestures/Eye.png" alt="Fox" width="70" />
+  <h1>N E X U S</h1>
+  
+  <p><b>L'instinct de la communication. Fluide. Rapide. Sécurisé.</b></p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Statut-En_Ligne-2EA043?style=for-the-badge" alt="Statut En Ligne" />
+    <img src="https://img.shields.io/badge/Déployé_sur-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel Status" />
+    <a href="https://nexus-dusky-alpha.vercel.app"><img src="https://img.shields.io/badge/🔥_Démo_Live-Lancer_Nexus-FF4500?style=for-the-badge" alt="Live Demo" /></a>
+    <img src="https://img.shields.io/badge/Licence-MIT-1A1A1A?style=for-the-badge&logo=github&logoColor=white" alt="License: MIT" />
+  </p>
+
   <br />
-  <p><i>L'alternative moderne, fluide et sécurisée pour vos communautés.</i></p>
+
+  <a href="https://nexus-dusky-alpha.vercel.app" target="_blank">
+    <img src="./screens/landing.png" alt="Nexus Banner" width="100%" />
+  </a>
+
+  <br /><br />
+
+  <h2><a href="https://nexus-dusky-alpha.vercel.app">🚀 Lancer l'expérience Nexus maintenant</a></h2>
+
+  <p><i>Propulsé par les meilleures technologies web</i></p>
+
+  <p>
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="TailwindCSS" />
+    <img src="https://img.shields.io/badge/Supabase-1C1C1C?style=for-the-badge&logo=supabase&logoColor=3ECF8E" alt="Supabase" />
+    <img src="https://img.shields.io/badge/hCaptcha-003366?style=for-the-badge&logo=hcaptcha&logoColor=white" alt="hCaptcha" />
+  </p>
+
+  <hr />
 </div>
+
+<br />
 
 > **Nexus** est une plateforme de messagerie instantanée moderne, fluide et hautement sécurisée. Conçue pour offrir une alternative élégante et rapide aux outils de communication actuels, elle combine la puissance de React et de Supabase pour une expérience utilisateur sans compromis.
 
