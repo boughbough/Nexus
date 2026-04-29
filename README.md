@@ -124,4 +124,3 @@ Ce projet est sous licence MIT. Libre à vous de l'utiliser et de le modifier.
 
 ---
 
-### 🦊 Développé avec passion par [Ton Nom/Pseudo]
