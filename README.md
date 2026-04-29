@@ -1,6 +1,9 @@
-# 🦊 Nexus — L'Instinct de la Communication
-
-![Nexus Banner](https://images.unsplash.com/photo-1614850523296-d8c1af93d400?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80)
+<div align="center">
+  <h1>🦊 Nexus — L'Instinct de la Communication</h1>
+  <img src="./screens/landing.png" alt="Nexus Banner" width="100%">
+  <br />
+  <p><i>L'alternative moderne, fluide et sécurisée pour vos communautés.</i></p>
+</div>
 
 > **Nexus** est une plateforme de messagerie instantanée moderne, fluide et hautement sécurisée. Conçue pour offrir une alternative élégante et rapide aux outils de communication actuels, elle combine la puissance de React et de Supabase pour une expérience utilisateur sans compromis.
 
