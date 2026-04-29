@@ -29,11 +29,11 @@
 
 ## 📸 Aperçu de l'Interface (Démos)
 
-| Inscription Sécurisée (hCaptcha) | Messagerie en Temps Réel |
+| Connexion Sécurisée (hCaptcha) | Messagerie en Temps Réel |
 | :--- | :--- |
-| ![Démo Inscription](./screens/login.gif) | ![Démo Chat Live](./screens/chat-live.gif) |
+| ![Démo Connexion](./screens/login.gif) | ![Démo Chat Live](./screens/chat-live.gif) |
 
-| Paramètres & Thèmes | Navigation Rapide (Quick Switcher) |
+| Paramètres | Navigation Rapide (Quick Switcher) |
 | :--- | :--- |
 | ![Démo Paramètres](./screens/settings.gif) | ![Démo Switcher](./screens/quick-switcher.gif) |
 
