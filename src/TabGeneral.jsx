@@ -40,11 +40,13 @@ export default function TabGeneral({ server, onUpdate, ajouterToast, onClose }) 
         }
       }
 
-      const { data, error } = await supabase.from('servers').update({ 
-        name: nom, 
-        description, 
-        is_public: isPublic, 
-        tags: tagsArray 
+      const { data, error } = await supabase.from('servers').update({
+        name: nom,
+        description,
+        is_public: isPublic,
+        tags: tagsArray,
+        icon_url: urls.icon,
+        banner_url: urls.banner
       }).eq('id', server.id).select();
 
       if (error) {

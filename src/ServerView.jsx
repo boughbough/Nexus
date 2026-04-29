@@ -690,7 +690,9 @@ const { session, monProfil, pseudo, blockedUsers, blockedBy, chargerBlocages } =
     }
   };
 
-  
+  useEffect(() => {
+    setServer(initialServer);
+  }, [initialServer]);
 
 
   const RenduMessage = ({ content, monPseudo, isMyMsg = false }) => {
@@ -847,7 +849,17 @@ const { session, monProfil, pseudo, blockedUsers, blockedBy, chargerBlocages } =
       `}</style>
       
       <div className="w-56 bg-base-200 flex flex-col flex-shrink-0 border-r border-base-300">
-        
+        {server.banner_url && (
+          <div className="h-28 w-full overflow-hidden shrink-0 bg-base-300 border-b border-base-300">
+            <img 
+              src={server.banner_url} 
+              className="w-full h-full object-cover" 
+              alt="Bannière" 
+              key={server.banner_url}
+            />
+          </div>
+        )}
+
         <div className="h-12 px-3 border-b border-base-300 flex items-center justify-between bg-base-200 hover:bg-base-300 transition-colors cursor-pointer" 
              onClick={() => { 
                setOngletInitialSettings(estAdmin ? 'general' : 'membres'); 
