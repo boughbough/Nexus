@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react';
 import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import MessageItem from './MessageItem'
 import EmojiPicker from './EmojiPicker'
@@ -2379,6 +2380,7 @@ const seConnecter = async (e, captchaToken) => {
       )}
 
     </div>
+    <Analytics/>
     </AppProvider>
   );
 } 
