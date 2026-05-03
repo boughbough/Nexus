@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ThemeDropdown from './ThemeDropdown';
 import { ArrowLeft } from 'lucide-react';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 
@@ -42,6 +43,9 @@ export default function LandingPage({
 
   return (
     <div className="relative h-screen w-full bg-base-200 overflow-hidden" style={{ fontFamily: "'system-ui', sans-serif" }}>
+      <div className="absolute top-4 right-4 z-[100]">
+        <ThemeDropdown />
+      </div>
 
       <style>{`
         @keyframes lp-float {
@@ -164,9 +168,10 @@ export default function LandingPage({
             <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm lp-fade-up lp-fade-up-d4">
               <button
                 onClick={() => basculerVersFormulaire(true)}
-                className="btn btn-primary flex-1 rounded-xl font-semibold shadow-md shadow-primary/20 transition-all duration-200 hover:shadow-lg hover:shadow-primary/30 hover:brightness-105 active:scale-[0.98]">
+                className="btn btn-ghost flex-1 rounded-xl font-semibold border border-base-300 bg-base-100/50 backdrop-blur-sm transition-all duration-200 hover:bg-base-100/80 hover:border-base-content/15 active:scale-[0.98]">
                 Se connecter
               </button>
+              
               <button
                 onClick={() => basculerVersFormulaire(false)}
                 className="btn btn-ghost flex-1 rounded-xl font-semibold border border-base-300 bg-base-100/50 backdrop-blur-sm transition-all duration-200 hover:bg-base-100/80 hover:border-base-content/15 active:scale-[0.98]">
