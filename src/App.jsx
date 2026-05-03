@@ -18,6 +18,7 @@ import ProfilPopover from './ProfilPopover';
 import AppProvider from './AppProvider';
 import QuickSwitcher from './QuickSwitcher';
 import DragDropOverlay from './DragDropOverlay';
+import { Analytics } from '@vercel/analytics/react';
 
 import { useUI } from './contexts/UIContext'; 
 
@@ -2379,6 +2380,7 @@ const seConnecter = async (e, captchaToken) => {
       )}
 
     </div>
+    <Analytics />
     </AppProvider>
   );
 } 
