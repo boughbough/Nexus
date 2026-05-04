@@ -151,8 +151,6 @@ const MessageItem = memo(({
   const estMentionne = msg.mentions?.includes(monPseudoAffiche);
 
 
-  // AJOUTE CE BLOC JUSTE AVANT LE "return (" :
-
   const markdownComponents = React.useMemo(() => ({
     p: ({node, children, ...props}) => {
       const renderInlineEffects = (content) => {
