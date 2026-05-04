@@ -1,8 +1,9 @@
 import React from 'react';
-import { VolumeX, Clock, ImagePlus, Loader2, Info, Smile, Send, Search, X, Reply, ArrowDown, FileVideo, Music, FileText, File } from 'lucide-react';
+import { Command, VolumeX, Clock, ImagePlus, Loader2, Info, Smile, Send, Search, X, Reply, ArrowDown, FileVideo, Music, FileText, File } from 'lucide-react';
 import EmojiPicker from './EmojiPicker';
 import DragDropOverlay from './DragDropOverlay';
 import { useUI } from './contexts/UIContext';
+import { LISTE_COMMANDES } from './useCommandes';
 
 const getFileIcon = (fileType) => {
   if (!fileType) return File;
@@ -30,6 +31,8 @@ const formatFileSize = (bytes) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' Mo';
 };
 
+
+
 export default function ZoneSaisie({
   nouveauMessage, setNouveauMessage,
   reponseA, setReponseA,
@@ -50,6 +53,8 @@ export default function ZoneSaisie({
   insererMention,
   fermerMenuMention,
 
+  commandeQuery, commandeIndex, setCommandeIndex, insererCommande, fermerMenuCommande,
+
   inputMessageRef, emojiTriggerRef, fichierInputRef,
   gererFrappe, envoyerMessage, envoyerFichier, confirmerEnvoiFichier,
   ouvrirGif, rechercherGifs, envoyerGif, insererEmoji,
@@ -58,6 +63,11 @@ export default function ZoneSaisie({
   const [emojiFermeture, setEmojiFermeture] = React.useState(false);
 
   const { ajouterToast } = useUI();
+
+  const commandeMenuOuvert = commandeQuery !== null;
+  const commandesFiltrees = commandeMenuOuvert && commandeQuery
+    ? LISTE_COMMANDES.filter(cmd => cmd.nom.toLowerCase().includes(commandeQuery.toLowerCase())) 
+    : (commandeMenuOuvert ? LISTE_COMMANDES : []);
 
   const verifierEtEnvoyerFichier = (files) => {
     if (!files || files.length === 0) return;
@@ -96,18 +106,18 @@ export default function ZoneSaisie({
 
     const gererTouche = (e) => {
     if (mentionMenuOuvert && mentionsFiltrees.length > 0) {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setMentionIndex(prev => (prev + 1) % mentionsFiltrees.length);
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setMentionIndex(prev => (prev - 1 + mentionsFiltrees.length) % mentionsFiltrees.length);
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        insererMention(mentionsFiltrees[mentionIndex].pseudo);
-      } else if (e.key === 'Escape') {
-        fermerMenuMention();
-      }
+      if (e.key === 'ArrowDown') { e.preventDefault(); setMentionIndex(prev => (prev + 1) % mentionsFiltrees.length); } 
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setMentionIndex(prev => (prev - 1 + mentionsFiltrees.length) % mentionsFiltrees.length); } 
+      else if (e.key === 'Enter') { e.preventDefault(); insererMention(mentionsFiltrees[mentionIndex].pseudo); } 
+      else if (e.key === 'Escape') { fermerMenuMention(); }
+      return;
+    }
+
+    if (commandeMenuOuvert && commandesFiltrees && commandesFiltrees.length > 0) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setCommandeIndex(prev => (prev + 1) % commandesFiltrees.length); } 
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setCommandeIndex(prev => (prev - 1 + commandesFiltrees.length) % commandesFiltrees.length); } 
+      else if (e.key === 'Enter') { e.preventDefault(); insererCommande(commandesFiltrees[commandeIndex].nom); } 
+      else if (e.key === 'Escape') { fermerMenuCommande(); }
       return;
     }
 
@@ -311,12 +321,49 @@ export default function ZoneSaisie({
             <div className="px-3 py-2 bg-base-200 text-[10px] font-black uppercase tracking-widest text-gray-500">Mentionner</div>
             <div className="max-h-48 overflow-y-auto p-1">
               {mentionsFiltrees.map((m, index) => (
-                <button key={m.pseudo} onClick={() => insererMention(m.pseudo)} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-bold text-left ${index === mentionIndex ? 'bg-primary/20 text-primary' : 'hover:bg-primary/10 hover:text-primary'}`}>
+                <button 
+                  key={m.pseudo} 
+                  ref={(el) => {
+                    if (index === mentionIndex && el) {
+                      el.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+                    }
+                  }}
+                  onClick={() => insererMention(m.pseudo)} 
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-bold text-left ${index === mentionIndex ? 'bg-primary/20 text-primary' : 'hover:bg-primary/10 hover:text-primary'}`}
+                >
                   <img src={m.avatar_url || `https://ui-avatars.com/api/?name=${m.pseudo}&background=random&rounded=true&size=32`} className="w-6 h-6 rounded-full object-cover shadow-sm" />
                   <span className="truncate">{m.pseudo}</span>
                 </button>
               ))}
               {mentionsFiltrees.length === 0 && <div className="p-3 text-xs text-center text-gray-500 italic">Aucun résultat</div>}
+            </div>
+          </div>
+        )}
+
+        {commandeMenuOuvert && (
+          <div className="absolute bottom-[80px] left-4 mb-2 w-72 bg-base-100 border border-base-300 shadow-2xl rounded-xl overflow-hidden z-[100] animate-[modalIn_0.15s_ease_forwards] origin-bottom-left">
+            <div className="px-3 py-2 bg-base-200 text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+              <Command size={12} /> Commandes magiques
+            </div>
+            <div className="max-h-48 overflow-y-auto p-1">
+              {commandesFiltrees && commandesFiltrees.map((cmd, index) => (
+                <button 
+                  key={cmd.nom}
+                  ref={(el) => {
+                    if (index === commandeIndex && el) {
+                      el.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+                    }
+                  }}
+                  onClick={() => insererCommande(cmd.nom)} 
+                  className={`w-full flex flex-col px-3 py-2 rounded-lg transition-colors text-left ${index === commandeIndex ? 'bg-primary/20 border-l-2 border-primary' : 'hover:bg-primary/10'}`}
+                >
+                  <span className="font-bold text-sm text-primary font-mono">{cmd.nom}</span>
+                  <span className="text-xs text-gray-500">{cmd.description}</span>
+                </button>
+              ))}
+              {(!commandesFiltrees || commandesFiltrees.length === 0) && (
+                <div className="p-3 text-xs text-center text-gray-500 italic">Aucune commande trouvée</div>
+              )}
             </div>
           </div>
         )}

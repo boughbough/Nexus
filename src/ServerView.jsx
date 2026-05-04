@@ -13,6 +13,8 @@ import MessageSkeleton from "./contexts/MessageSkeleton";
 import { useAuth } from './contexts/AuthContext';
 import { useUI } from './contexts/UIContext';
 
+import { useCommandes } from './useCommandes';
+
 const STATUTS = {
   en_ligne:  { label: 'En ligne',  dot: 'bg-success',  text: 'text-success' },
   occupe:    { label: 'Occupé',    dot: 'bg-warning',  text: 'text-warning' },
@@ -35,6 +37,7 @@ export default function ServerView({ server: initialServer, initialChannel, prof
   const [mentionMenu, setMentionMenu] = useState({ ouvert: false, recherche: '', index: -1 });
   const [membresFiltres, setMembresFiltres] = useState([]);
   const [mentionIndex, setMentionIndex] = useState(0);
+
   const [tempsRestantSlowmode, setTempsRestantSlowmode] = useState(0);
 
   const [mutedUntil, setMutedUntil] = useState(null);
@@ -42,9 +45,17 @@ const estMuet = mutedUntil && new Date(mutedUntil) > new Date();
 
 const { session, monProfil, pseudo, blockedUsers, blockedBy, chargerBlocages } = useAuth();
   const { ajouterToast, toggleMenuMobile } = useUI();
+  const { 
+    commandeQuery, 
+    commandeIndex, 
+    setCommandeIndex, 
+    traiterCommande, 
+    gererFrappeCommande, 
+    reinitialiserMenuCommande 
+  } = useCommandes();
   const [nouveauMessage, setNouveauMessage] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  const [settingsOuvert, setSettingsOuvert] = useState(false);
+  const [settingsOuvert, setSettingsOuvert] = useState(false); 
   const [ongletInitialSettings, setOngletInitialSettings] = useState('general');
   const [reponseA, setReponseA] = useState(null);
   const [messageEnEdition, setMessageEnEdition] = useState(null);
@@ -221,12 +232,12 @@ const { session, monProfil, pseudo, blockedUsers, blockedBy, chargerBlocages } =
     const words = textBeforeCursor.split(/\s/);
     const lastWord = words[words.length - 1];
 
+    gererFrappeCommande(val);
+
     if (lastWord.startsWith('@')) {
       setMentionMenu({ ouvert: true, recherche: lastWord.slice(1).toLowerCase(), index: 0 });
       const search = lastWord.slice(1).toLowerCase();
-      
       const filtres = membres.filter(m => m.pseudo !== pseudo && m.pseudo.toLowerCase().includes(search));
-      
       setMembresFiltres(filtres);
     } else {
       setMentionMenu({ ouvert: false, recherche: '', index: -1 });
@@ -538,25 +549,73 @@ const { session, monProfil, pseudo, blockedUsers, blockedBy, chargerBlocages } =
     }
 
     if (fichierPreview) { await confirmerEnvoiFichier(); return; }
-    if (!nouveauMessage.trim() || !channelActuel) return;
+    
+    const messageATraiter = nouveauMessage.trim();
+    if (!messageATraiter || !channelActuel) return;
+
+    const texteFinal = traiterCommande(messageATraiter, ajouterToast);
+    if (texteFinal === null) return;
+
+    if (texteFinal.startsWith('/')) {
+      const args = texteFinal.split(' ');
+      const commande = args[0].toLowerCase();
+      const resteDuTexte = args.slice(1).join(' ');
+
+      if (commande === '/shrug') {
+        texteFinal = resteDuTexte ? (resteDuTexte + ' ¯\\_(ツ)_/¯') : '¯\\_(ツ)_/¯';
+      } 
+      else if (commande === '/roll') {
+        const max = parseInt(args[1]) || 100;
+        const resultat = Math.floor(Math.random() * max) + 1;
+        texteFinal = `🎲 *A lancé un dé (1-${max}) et a obtenu :* **${resultat}**`;
+      } 
+      else if (commande === '/flip') {
+        const resultat = Math.random() < 0.5 ? 'Pile' : 'Face';
+        texteFinal = `🪙 *A lancé une pièce et a obtenu :* **${resultat}**`;
+      }
+      else if (commande === '/8ball') {
+        if (!resteDuTexte) {
+          ajouterToast("Posez une question : /8ball Vais-je devenir riche ?", "info");
+          return;
+        }
+        const reponses = [
+          "C'est certain.", "Sans aucun doute.", "Oui, absolument.", "Tu peux y compter.",
+          "Très probablement.", "Les signes pointent vers oui.", "Essaye plus tard.",
+          "Mieux vaut ne pas te le dire maintenant.", "Concentre-toi et redemande.",
+          "N'y compte pas.", "Ma réponse est non.", "Très douteux."
+        ];
+        const reponseAleatoire = reponses[Math.floor(Math.random() * reponses.length)];
+        texteFinal = `🎱 *Demande à la boule magique :* "${resteDuTexte}"\n> **${reponseAleatoire}**`;
+      }
+    
+    }
 
     const regexMention = /@(\w+)/g;
-    const mentionsTrouvees = [...nouveauMessage.matchAll(regexMention)].map(m => m[1]);
+    const mentionsTrouvees = [...texteFinal.matchAll(regexMention)].map(m => m[1]);
 
-    const texte = nouveauMessage;
-    setNouveauMessage(''); setReponseA(null);
+    const reponse = reponseA?.id || null;
     
-    await supabase.from('messages').insert([{ 
-      content: texte, 
+    setNouveauMessage(''); 
+    setReponseA(null);
+    reinitialiserMenuCommande();
+    
+    const { error } = await supabase.from('messages').insert([{ 
+      content: texteFinal, 
       username: pseudo, 
       room: `server-${server.id}-${channelActuel.id}`, 
       server_id: server.id, 
       channel_id: channelActuel.id,
-      reply_to_id: reponseA?.id || null,
-      mentions: mentionsTrouvees
+      reply_to_id: reponse,
+      mentions: mentionsTrouvees,
     }]);
-    scrollBas();
 
+    if (error) {
+       ajouterToast("Erreur d'envoi. Avez-vous ajouté la colonne is_ephemeral ?", "error");
+       setNouveauMessage(messageATraiter);
+       return;
+    }
+
+    scrollBas();
     dernierMessageTempsRef.current = Date.now();
   };
 
@@ -832,6 +891,7 @@ const { session, monProfil, pseudo, blockedUsers, blockedBy, chargerBlocages } =
     return () => supabase.removeChannel(channel);
   }, [server?.id, pseudo]);
 
+
   return (
     <div className="flex flex-1 overflow-hidden relative bg-base-100">
       <style>{`
@@ -1052,6 +1112,7 @@ const { session, monProfil, pseudo, blockedUsers, blockedBy, chargerBlocages } =
                         allerAuMessage={allerAuMessage}
                         salonActuel={`server-${server.id}-${channelActuel.id}`}
                         toggleReaction={toggleReaction}
+                        supprimerMessage={supprimerMessage}
                       />
                     );
                   })}
@@ -1084,6 +1145,16 @@ const { session, monProfil, pseudo, blockedUsers, blockedBy, chargerBlocages } =
               tempsRestantSlowmode={tempsRestantSlowmode}
               estMuet={estMuet}
               mutedUntil={mutedUntil}
+
+              commandeQuery={commandeQuery}
+              commandeIndex={commandeIndex}
+              setCommandeIndex={setCommandeIndex}
+              fermerMenuCommande={reinitialiserMenuCommande}
+              insererCommande={(nomCommande) => {
+                setNouveauMessage(`${nomCommande} `);
+                reinitialiserMenuCommande();
+                inputMessageRef.current?.focus();
+              }}
 
               placeholder={`Écrire dans #${channelActuel?.name}...`}
               pseudoActuel={pseudo}

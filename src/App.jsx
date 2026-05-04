@@ -3,7 +3,7 @@ import MessageItem from './MessageItem'
 import EmojiPicker from './EmojiPicker'
 import ServerSidebar from './ServerSidebar'
 import ServerView from './ServerView'
-import { Clock, Compass , Copy, Send, Hash, Users, Info, UserPlus, LogOut, Atom, Trash, Pencil, Smile, Reply, X, ArrowDown, ImagePlus, Loader2, MessageCircle, Search, Settings, User, Palette, ShieldAlert, Upload, ArrowLeft, FileText, FileVideo, File, Music, Menu} from 'lucide-react'
+import { Clock, Compass , Copy, Send, Hash, Users, Info, UserPlus, LogOut, Atom, Trash, Pencil, Smile, Reply, X, ArrowDown, ImagePlus, Loader2, MessageCircle, Search, Settings, User, Palette, ShieldAlert, Upload, ArrowLeft, FileText, FileVideo, File, Music, Menu, Import} from 'lucide-react'
 import { supabase } from './supabase'
 import ReactMarkdown from 'react-markdown' 
 
@@ -19,7 +19,9 @@ import AppProvider from './AppProvider';
 import QuickSwitcher from './QuickSwitcher';
 import DragDropOverlay from './DragDropOverlay';
 
-import { useUI } from './contexts/UIContext'; 
+import { useUI } from './contexts/UIContext';
+
+import { useCommandes } from './useCommandes';
 
 const MobileOverlay = () => {
   const { menuMobileOuvert, fermerMenuMobile, ajouterToast } = useUI();
@@ -40,6 +42,9 @@ export default function App() {
   const [nouveauMessage, setNouveauMessage] = useState("");
   const [mentionQuery, setMentionQuery] = useState(null);
   const [mentionIndex, setMentionIndex] = useState(0);
+  
+  
+
   const [messages, setMessages] = useState([]);
   const [session, setSession] = useState(null);
   const [email, setEmail] = useState("");
@@ -459,6 +464,7 @@ const [demandesEnAttente, setDemandesEnAttente] = useState(0);
   const emojisDispos = ["👍", "❤️", "😂", "🔥", "👀"];
   const finDesMessagesRef = useRef(null);
   const chargerMessagesAnciensRef = useRef(null);
+  const estPremierChargementTermine = useRef(false);
 
   const [toasts, setToasts] = useState([]);
   const [estHorsLigne, setEstHorsLigne] = useState(!navigator.onLine);
@@ -477,6 +483,15 @@ const [demandesEnAttente, setDemandesEnAttente] = useState(0);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
   };
 
+  const { 
+      commandeQuery, 
+      commandeIndex, 
+      setCommandeIndex, 
+      traiterCommande, 
+      gererFrappeCommande, 
+      reinitialiserMenuCommande 
+    } = useCommandes();
+
   const demanderConfirmation = (message, onConfirm, danger = true) => {
     setModalConfirm({ message, onConfirm, danger });
   };
@@ -484,6 +499,7 @@ const [demandesEnAttente, setDemandesEnAttente] = useState(0);
   const forceScrollRef = useRef(false);
 
   const [monProfil, setMonProfil] = useState(null);
+  const [ping, setPing] = useState(null);
   const monProfilRef = useRef(null);
   useEffect(() => { monProfilRef.current = monProfil; }, [monProfil]);
   const [profilsCache, setProfilsCache] = useState({});
@@ -577,10 +593,16 @@ const [demandesEnAttente, setDemandesEnAttente] = useState(0);
   const gererScroll = () => {
     if (!conteneurMessagesRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = conteneurMessagesRef.current;
+    
+    if (forceScrollRef.current) return;
+
     const estEnBas = scrollHeight - scrollTop - clientHeight < 100;
     estEnBasRef.current = estEnBas;
     if (estEnBas && afficherNotif) setAfficherNotif(false);
-    if (scrollTop < 150) chargerMessagesAnciens();
+    
+    if (scrollTop < 150 && scrollHeight > clientHeight) {
+      chargerMessagesAnciens();
+    }
   };
   
 
@@ -1090,14 +1112,17 @@ const [demandesEnAttente, setDemandesEnAttente] = useState(0);
       canalTypingRef.current = null;
     };
   }, [session]);
+
+
   useLayoutEffect(() => {
-    if (forceScrollRef.current && conteneurMessagesRef.current) {
+    if (forceScrollRef.current && conteneurMessagesRef.current && estPremierChargementTermine.current) {
       requestAnimationFrame(() => {
         if (!conteneurMessagesRef.current) return;
         if (premierNonLuId && ligneNonLuRef.current) {
           ligneNonLuRef.current.scrollIntoView({ behavior: 'auto', block: 'center' });
         } else {
           conteneurMessagesRef.current.scrollTop = conteneurMessagesRef.current.scrollHeight;
+          estEnBasRef.current = true;
         }
         forceScrollRef.current = false;
       });
@@ -1106,17 +1131,22 @@ const [demandesEnAttente, setDemandesEnAttente] = useState(0);
 
   useLayoutEffect(() => {
     if (!serverActuel && vueActive === 'chat' && conteneurMessagesRef.current) {
-      requestAnimationFrame(() => {
+      const executerScrollBase = () => {
         if (conteneurMessagesRef.current) {
           conteneurMessagesRef.current.scrollTop = conteneurMessagesRef.current.scrollHeight;
         }
-      });
+      };
+      
+      executerScrollBase();
+      setTimeout(executerScrollBase, 150);
     }
   }, [serverActuel, vueActive]);
 
   useEffect(() => {
     if (!session) return;
     const chargerMessages = async () => {
+      estPremierChargementTermine.current = false;
+      
       const { data, error } = await supabase.from('messages')
         .select('*, reactions(*)')
         .eq('room', salonActuel)
@@ -1134,8 +1164,17 @@ const [demandesEnAttente, setDemandesEnAttente] = useState(0);
         }
         
         setPremierNonLuId(nonLuId);
-        forceScrollRef.current = true;
         setMessages(chrono);
+
+        setTimeout(() => {
+          forceScrollRef.current = true;
+          estPremierChargementTermine.current = true;
+
+          if (conteneurMessagesRef.current) {
+            conteneurMessagesRef.current.scrollTop = conteneurMessagesRef.current.scrollHeight;
+            estEnBasRef.current = true;
+          }
+        }, 50);
       }
     };
 
@@ -1365,6 +1404,7 @@ const seConnecter = async (e, captchaToken) => {
 
     if (!session) return;
     const pseudoAffiche = monProfil?.pseudo || session.user.email.split('@')[0];
+    
     if (!typingTimeoutRef.current) {
       canalTypingRef.current?.send({
         type: 'broadcast',
@@ -1387,6 +1427,8 @@ const seConnecter = async (e, captchaToken) => {
     const words = textBeforeCursor.split(/\s/);
     const lastWord = words[words.length - 1];
 
+    gererFrappeCommande(val);
+
     if (lastWord.startsWith('@')) {
       const search = lastWord.slice(1).toLowerCase();
       setMentionQuery(search);
@@ -1398,7 +1440,45 @@ const seConnecter = async (e, captchaToken) => {
 
   const dernierEnvoiRef = useRef(0);
   const envoyerMessage = async () => {
-    if (!nouveauMessage.trim()) return;
+    const messageATraiter = nouveauMessage.trim();
+    if (!messageATraiter) return;
+
+    const texteFinal = traiterCommande(messageATraiter, ajouterToast);
+    if (texteFinal === null) return;
+
+    if (texteFinal.startsWith('/')) {
+      const args = texteFinal.split(' ');
+      const commande = args[0].toLowerCase();
+      const resteDuTexte = args.slice(1).join(' ');
+
+      if (commande === '/shrug') {
+        texteFinal = resteDuTexte ? (resteDuTexte + ' ¯\\_(ツ)_/¯') : '¯\\_(ツ)_/¯';
+      } 
+      else if (commande === '/roll') {
+        const max = parseInt(args[1]) || 100;
+        const resultat = Math.floor(Math.random() * max) + 1;
+        texteFinal = `🎲 *A lancé un dé (1-${max}) et a obtenu :* **${resultat}**`;
+      } 
+      else if (commande === '/flip') {
+        const resultat = Math.random() < 0.5 ? 'Pile' : 'Face';
+        texteFinal = `🪙 *A lancé une pièce et a obtenu :* **${resultat}**`;
+      }
+      else if (commande === '/8ball') {
+        if (!resteDuTexte) {
+          ajouterToast("Posez une question : /8ball Vais-je devenir riche ?", "info");
+          return;
+        }
+        const reponses = [
+          "C'est certain.", "Sans aucun doute.", "Oui, absolument.", "Tu peux y compter.",
+          "Très probablement.", "Les signes pointent vers oui.", "Essaye plus tard.",
+          "Mieux vaut ne pas te le dire maintenant.", "Concentre-toi et redemande.",
+          "N'y compte pas.", "Ma réponse est non.", "Très douteux."
+        ];
+        const reponseAleatoire = reponses[Math.floor(Math.random() * reponses.length)];
+        texteFinal = `🎱 *Demande à la boule magique :* "${resteDuTexte}"\n> **${reponseAleatoire}**`;
+      }
+      
+    }
 
     const pseudosAmis = amis.map(f => {
       const idAmi = f.requester_id === session.user.id ? f.receiver_id : f.requester_id;
@@ -1406,32 +1486,32 @@ const seConnecter = async (e, captchaToken) => {
     }).filter(Boolean);
 
     const regexMention = /@(\w+)/g;
-    const motsApresArobase = [...nouveauMessage.matchAll(regexMention)].map(m => m[1]);
+    const motsApresArobase = [...texteFinal.matchAll(regexMention)].map(m => m[1]);
 
     const mentionsValides = motsApresArobase.filter(pseudo => pseudosAmis.includes(pseudo));
 
     const pseudoAffiche = monProfil?.pseudo || session.user.email.split('@')[0];
-    const texte = nouveauMessage;
     const reponse = reponseA ? reponseA.id : null;
     
     setNouveauMessage(""); 
     setReponseA(null);
     setMentionQuery(null);
+    reinitialiserMenuCommande();
     clearTimeout(typingTimeoutRef.current);
     canalTypingRef.current?.send({ type: 'broadcast', event: 'typing', payload: { pseudo: pseudoAffiche, salon: salonActuelRef.current, typing: false } });
     scrollerVersLeBas();
     
     const { error } = await supabase.from('messages').insert([{ 
-      content: texte, 
+      content: texteFinal, 
       username: pseudoAffiche, 
       room: salonActuel, 
       reply_to_id: reponse,
-      mentions: mentionsValides 
+      mentions: mentionsValides,
     }]);
 
     if (error) {
       ajouterToast("Impossible d'envoyer : blocage actif.", "error");
-      setNouveauMessage(texte); 
+      setNouveauMessage(messageATraiter); 
     }
   };
 
@@ -1666,6 +1746,26 @@ const seConnecter = async (e, captchaToken) => {
       ajouterToast("Ami retiré", "success");
     }
   };
+
+  useEffect(() => {
+    if (!session) return;
+    let isMounted = true;
+
+    const mesurerPing = async () => {
+      const debut = Date.now();
+      await supabase.from('profiles').select('id').limit(1);
+      const latence = Date.now() - debut;
+      if (isMounted) setPing(latence);
+    };
+
+    mesurerPing(); 
+    const interval = setInterval(mesurerPing, 2000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [session]);
 
   if (!authLoaded || (session && !dataLoaded)) {
     return (
@@ -1915,6 +2015,7 @@ const seConnecter = async (e, captchaToken) => {
         setGroups={setGroups}
         memberMeta={memberMeta}
         setMemberMeta={setMemberMeta}
+        ping={ping}
         onSelectHome={() => { 
           setServerActuel(null); 
           setVueActive('chat');
@@ -2204,6 +2305,16 @@ const seConnecter = async (e, captchaToken) => {
               utilisateursEnTrain={utilisateursEnTrain}
               dernierTexteTypingRef={dernierTexteTypingRef}
               inputRef={inputRef}
+
+              commandeQuery={commandeQuery}
+              commandeIndex={commandeIndex}
+              setCommandeIndex={setCommandeIndex}
+              fermerMenuCommande={reinitialiserMenuCommande}
+              insererCommande={(nomCommande) => {
+                setNouveauMessage(`${nomCommande} `);
+                reinitialiserMenuCommande();
+                inputMessageRef.current?.focus();
+              }}
 
               placeholder={salonActuel.startsWith('dm_') ? 'Message privé...' : `Écrire dans #${salonActuel}...`}
               pseudoActuel={monPseudoAffiche}

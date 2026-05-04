@@ -4,6 +4,28 @@ import {ShieldAlert, Reply, Pin, Pencil, Trash, X, ArrowDown, FileText, FileVide
 import LinkPreview from './LinkPreview';
 import { useAuth } from './contexts/AuthContext';
 
+const Spoiler = ({ texte }) => {
+  const [estRevele, setEstRevele] = useState(false);
+  
+  return (
+    <span 
+      onClick={(e) => { 
+        e.stopPropagation();
+        setEstRevele(true); 
+      }}
+      className={`cursor-pointer rounded px-1.5 py-0.5 mx-0.5 transition-all duration-300 select-none ${
+        estRevele 
+          ? 'bg-black/20 text-inherit' 
+          : 'bg-black/80 text-transparent hover:bg-black/60 relative overflow-hidden'
+      }`}
+      title={estRevele ? "" : "Cliquez pour révéler le spoiler"}
+    >
+      {texte}
+    </span>
+  );
+};
+
+
 const getFileIcon = (fileType) => {
   if (!fileType) return File;
   if (fileType.startsWith('video/')) return FileVideo;
@@ -128,6 +150,8 @@ const MessageItem = memo(({
   const estMediaSeul = msg.image_url && !msg.content && !msg.reply_to_id;
   const estMentionne = msg.mentions?.includes(monPseudoAffiche);
 
+
+
   return (
     <div ref={el => { if (el) messagesRefsMap.current[msg.id] = el; else delete messagesRefsMap.current[msg.id]; }} className={`animate-message group w-full px-4 py-1 transition-colors ${messageEnEdition === msg.id ? 'bg-base-200/50' : ''}`}>
       {afficherSeparateur && <div className="divider text-xs font-bold text-gray-400 my-6">{formaterDateSeparateur(msg.created_at)}</div>}
@@ -238,35 +262,42 @@ const MessageItem = memo(({
                     <>
                       <ReactMarkdown components={{
                         p: ({node, children, ...props}) => {
-                          const renderMentions = (content) => {
+                          const renderInlineEffects = (content) => {
                             if (typeof content !== 'string') return content;
                             
-                            const parts = content.split(/(@\w+)/g);
+                            const parts = content.split(/\|\|(.*?)\|\|/g);
                             
                             return parts.map((part, i) => {
-                              if (!part.startsWith('@')) return part;
+                              if (i % 2 === 1) {
+                                return <Spoiler key={`sp-${i}`} texte={part} />;
+                              }
                               
-                              const pseudoMention = part.slice(1);
-                              const estMoi = pseudoMention === monPseudoAffiche;
-                              
-                              return (
-                                <span key={i} className={`inline-flex items-baseline rounded px-1 py-0.5 mx-0.5 transition-colors ${
-                                  estMoi 
-                                    ? 'bg-success/40 text-success-content ring-1 ring-success/50'
-                                    : isMyMessage 
-                                    ? 'bg-white/30 text-white shadow-sm' 
-                                    : 'text-primary bg-primary/10 hover:bg-primary/20'
-                                }`}>
-                                  <span className="opacity-70 font-medium">@</span>
-                                  <span className="font-black">{pseudoMention}</span>
-                                </span>
-                              );
+                              const mentionParts = part.split(/(@\w+)/g);
+                              return mentionParts.map((mPart, j) => {
+                                if (mPart.startsWith('@')) {
+                                  const pseudoMention = mPart.slice(1);
+                                  const estMoi = pseudoMention === monPseudoAffiche;
+                                  return (
+                                    <span key={`mt-${i}-${j}`} className={`inline-flex items-baseline rounded px-1 py-0.5 mx-0.5 transition-colors ${
+                                      estMoi 
+                                        ? 'bg-success/40 text-success-content ring-1 ring-success/50'
+                                        : isMyMessage 
+                                        ? 'bg-white/30 text-white shadow-sm' 
+                                        : 'text-primary bg-primary/10 hover:bg-primary/20'
+                                    }`}>
+                                      <span className="opacity-70 font-medium">@</span>
+                                      <span className="font-black">{pseudoMention}</span>
+                                    </span>
+                                  );
+                                }
+                                return mPart;
+                              });
                             });
                           };
 
                           return (
                             <div className="mb-2 last:mb-0" {...props}>
-                              {React.Children.map(children, child => renderMentions(child))}
+                              {React.Children.map(children, child => renderInlineEffects(child))}
                             </div>
                           );
                         },

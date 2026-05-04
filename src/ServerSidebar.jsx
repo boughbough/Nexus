@@ -9,7 +9,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useUI } from './contexts/UIContext';
 
 
-export default function ServerSidebar({ servers, setServers, serverActuel, onSelectServer, onSelectHome, isHome, notifsDMs, onSelectExplorer, vueActive, notifications, onLeaveServer, groups, setGroups, memberMeta, setMemberMeta, demandesEnAttente = 0 }) {
+export default function ServerSidebar({ servers, setServers, serverActuel, onSelectServer, onSelectHome, isHome, notifsDMs, onSelectExplorer, vueActive, notifications, onLeaveServer, groups, setGroups, memberMeta, setMemberMeta, demandesEnAttente = 0 ,ping}) {
   const { session, monProfil, pseudo } = useAuth();
   const { ajouterToast, menuMobileOuvert, fermerMenuMobile } = useUI();
   const [modalOuverte, setModalOuverte] = useState(null);
@@ -224,8 +224,9 @@ export default function ServerSidebar({ servers, setServers, serverActuel, onSel
 
   return (
     <>
-    <div className={`w-[72px] bg-base-300 flex flex-col items-center py-4 gap-3 shrink-0 border-r border-base-100 absolute md:relative z-[120] h-full transition-transform duration-300 ${menuMobileOuvert ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>         
-        <div className="relative group mb-2">
+    <div className={`w-[72px] bg-base-300 flex flex-col items-center pt-4 pb-2 gap-3 shrink-0 border-r border-base-100 absolute md:relative z-[120] h-full transition-transform duration-300 ${menuMobileOuvert ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>         
+        
+        <div className="relative group mb-2 flex-shrink-0">
           <button 
             onClick={onSelectHome} 
             className={`cursor-pointer flex items-center justify-center w-12 h-12 rounded-[24px] hover:rounded-[16px] transition-all duration-300 ${isHome ? 'bg-primary text-white rounded-[16px]' : 'bg-base-200 text-base-content hover:bg-primary/50'}`}
@@ -235,7 +236,6 @@ export default function ServerSidebar({ servers, setServers, serverActuel, onSel
           
           {(notifsDMs > 0 || demandesEnAttente > 0) && (
             <span className="absolute -top-1 -right-1 w-4 h-4 bg-error border-2 border-base-200 rounded-full flex items-center justify-center z-10 animate-pulse">
-
             </span>
           )}
           
@@ -243,109 +243,115 @@ export default function ServerSidebar({ servers, setServers, serverActuel, onSel
         </div>
         <div className="w-8 h-px bg-base-content/10 flex-shrink-0 mb-1" />
 
-        {dragId && <div onDragOver={(e) => { e.preventDefault(); setDragOverId('ungrouped-zone'); }} onDragLeave={() => setDragOverId(null)} onDrop={(e) => handleDropOnGroup(e, null)} className={`w-10 h-2 rounded-full mb-1 transition-all ${dragOverId === 'ungrouped-zone' ? 'bg-primary scale-150' : 'bg-base-content/20 border border-dashed border-base-content/40'}`} title="Glisser ici pour retirer du groupe" />}
+        <div className="flex-1 w-full overflow-y-auto flex flex-col items-center gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          
+          {dragId && <div onDragOver={(e) => { e.preventDefault(); setDragOverId('ungrouped-zone'); }} onDragLeave={() => setDragOverId(null)} onDrop={(e) => handleDropOnGroup(e, null)} className={`w-10 h-2 rounded-full mb-1 flex-shrink-0 transition-all ${dragOverId === 'ungrouped-zone' ? 'bg-primary scale-150' : 'bg-base-content/20 border border-dashed border-base-content/40'}`} title="Glisser ici pour retirer du groupe" />}
 
-        {ungrouped.map(server => renderServerIcon(server))}
+          {ungrouped.map(server => renderServerIcon(server))}
 
-        {groups.map(group => {
-          const gServers = getGroupServers(group.id);
-          const isCollapsed = collapsed[group.id];
-          return (
-            <div key={group.id} className="flex flex-col items-center w-full flex-shrink-0 mt-2">
-              
-              <div 
-                onDragOver={(e) => { e.preventDefault(); if (dragId) setDragOverId(`group-header-${group.id}`); }} 
-                onDragLeave={() => setDragOverId(null)} 
-                onDrop={(e) => handleDropOnGroup(e, group.id)} 
-                onClick={() => setCollapsed(prev => ({ ...prev, [group.id]: !prev[group.id] }))}
-                onContextMenu={(e) => { 
-                  e.preventDefault(); e.stopPropagation(); 
-                  if (menuGroupeFermetureRef.current) clearTimeout(menuGroupeFermetureRef.current);
-                  setMenuGroupeFermeture(false);
-                  const rect = e.currentTarget.getBoundingClientRect(); 
-                  setMenuGroupe({ group, x: rect.right + 8, y: Math.min(rect.top, window.innerHeight - 100) }); 
-                }}
-                className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center overflow-hidden transition-all cursor-pointer select-none mb-1 shadow-sm ${isCollapsed ? 'bg-base-200 hover:bg-primary/20 hover:rounded-xl' : 'bg-base-200/50 hover:bg-base-200'} ${dragOverId === `group-header-${group.id}` ? 'ring-2 ring-primary scale-105' : ''}`}
-                title={group.name}
-              >
-                {groupeEnEdition === group.id ? (
-                  <input 
-                    type="text" autoFocus 
-                    className="w-10 text-[9px] text-center bg-base-100 text-base-content border border-primary/50 rounded outline-none py-0.5" 
-                    value={nomGroupeEdition} 
-                    onChange={(e) => setNomGroupeEdition(e.target.value)} 
-                    onBlur={() => sauvegarderNomGroupe(group.id)} 
-                    onKeyDown={(e) => e.key === 'Enter' && sauvegarderNomGroupe(group.id)} 
-                    onClick={e => e.stopPropagation()} 
-                  />
-                ) : (
-                  <>
-                    <div className="flex items-center justify-center text-gray-500 mb-0.5">
-                      {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
-                    </div>
-                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest truncate w-10 text-center leading-tight">
-                      {group.name}
-                    </span>
-                  </>
-                )}
-              </div>
-
-              {!isCollapsed && (
-                <div className="flex flex-col items-center w-full">
-                  {gServers.map(server => renderServerIcon(server))}
-                  
-                  {gServers.length === 0 && (
-                    <div 
-                      onDragOver={(e) => { e.preventDefault(); if (dragId) setDragOverId(`empty-${group.id}`); }} 
-                      onDragLeave={() => setDragOverId(null)} 
-                      onDrop={async (e) => { 
-                        e.preventDefault(); 
-                        if (!dragId) return; 
-                        const currentDragId = dragId; 
-                        setDragId(null); setDragOverId(null); 
-                        setMemberMeta(prev => ({ ...prev, [currentDragId]: { ...prev[currentDragId], group_id: group.id, position: 0 } })); 
-                        await supabase.from('server_members').update({ group_id: group.id, position: 0 }).eq('server_id', currentDragId).eq('user_id', session.user.id); 
-                      }} 
-                      className={`w-12 h-12 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-colors ${dragOverId === `empty-${group.id}` ? 'border-primary bg-primary/10' : 'border-base-content/20'}`}
-                    >
-                      <span className="text-[8px] text-gray-500 font-bold uppercase">Vide</span>
-                    </div>
+          {groups.map(group => {
+            const gServers = getGroupServers(group.id);
+            const isCollapsed = collapsed[group.id];
+            return (
+              <div key={group.id} className="flex flex-col items-center w-full flex-shrink-0 mt-2">
+                
+                <div 
+                  onDragOver={(e) => { e.preventDefault(); if (dragId) setDragOverId(`group-header-${group.id}`); }} 
+                  onDragLeave={() => setDragOverId(null)} 
+                  onDrop={(e) => handleDropOnGroup(e, group.id)} 
+                  onClick={() => setCollapsed(prev => ({ ...prev, [group.id]: !prev[group.id] }))}
+                  onContextMenu={(e) => { 
+                    e.preventDefault(); e.stopPropagation(); 
+                    if (menuGroupeFermetureRef.current) clearTimeout(menuGroupeFermetureRef.current);
+                    setMenuGroupeFermeture(false);
+                    const rect = e.currentTarget.getBoundingClientRect(); 
+                    setMenuGroupe({ group, x: rect.right + 8, y: Math.min(rect.top, window.innerHeight - 100) }); 
+                  }}
+                  className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center overflow-hidden transition-all cursor-pointer select-none mb-1 shadow-sm ${isCollapsed ? 'bg-base-200 hover:bg-primary/20 hover:rounded-xl' : 'bg-base-200/50 hover:bg-base-200'} ${dragOverId === `group-header-${group.id}` ? 'ring-2 ring-primary scale-105' : ''}`}
+                  title={group.name}
+                >
+                  {groupeEnEdition === group.id ? (
+                    <input 
+                      type="text" autoFocus 
+                      className="w-10 text-[9px] text-center bg-base-100 text-base-content border border-primary/50 rounded outline-none py-0.5" 
+                      value={nomGroupeEdition} 
+                      onChange={(e) => setNomGroupeEdition(e.target.value)} 
+                      onBlur={() => sauvegarderNomGroupe(group.id)} 
+                      onKeyDown={(e) => e.key === 'Enter' && sauvegarderNomGroupe(group.id)} 
+                      onClick={e => e.stopPropagation()} 
+                    />
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-center text-gray-500 mb-0.5">
+                        {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
+                      </div>
+                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest truncate w-10 text-center leading-tight">
+                        {group.name}
+                      </span>
+                    </>
                   )}
                 </div>
-              )}
-            </div>
-          );
-        })}
 
-        <div className="w-8 h-px bg-base-content/10 flex-shrink-0 my-2" />
+                {!isCollapsed && (
+                  <div className="flex flex-col items-center w-full">
+                    {gServers.map(server => renderServerIcon(server))}
+                    
+                    {gServers.length === 0 && (
+                      <div 
+                        onDragOver={(e) => { e.preventDefault(); if (dragId) setDragOverId(`empty-${group.id}`); }} 
+                        onDragLeave={() => setDragOverId(null)} 
+                        onDrop={async (e) => { 
+                          e.preventDefault(); 
+                          if (!dragId) return; 
+                          const currentDragId = dragId; 
+                          setDragId(null); setDragOverId(null); 
+                          setMemberMeta(prev => ({ ...prev, [currentDragId]: { ...prev[currentDragId], group_id: group.id, position: 0 } })); 
+                          await supabase.from('server_members').update({ group_id: group.id, position: 0 }).eq('server_id', currentDragId).eq('user_id', session.user.id); 
+                        }} 
+                        className={`w-12 h-12 flex-shrink-0 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-colors ${dragOverId === `empty-${group.id}` ? 'border-primary bg-primary/10' : 'border-base-content/20'}`}
+                      >
+                        <span className="text-[8px] text-gray-500 font-bold uppercase">Vide</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
-        <div className="flex flex-col gap-2 items-center relative z-10 pb-4">
-          
-          <button onClick={() => setModalOuverte('create')} title="Créer un serveur" 
-            className="btn btn-square h-12 w-12 bg-base-100 border-base-300 text-success hover:bg-success hover:text-success-content hover:border-success rounded-2xl hover:rounded-xl shadow-sm transition-all duration-200">
-            <Plus size={22} />
-          </button>
-          
-          <button onClick={() => setModalOuverte('join')} title="Rejoindre un serveur" 
-            className="btn btn-square h-12 w-12 bg-base-100 border-base-300 text-primary hover:bg-primary hover:text-primary-content hover:border-primary rounded-2xl hover:rounded-xl shadow-sm transition-all duration-200">
-            <SquarePlus size={20} />
-          </button>
-          
-          <button onClick={() => setModalOuverte('folder')} title="Créer un groupe" 
-            className="btn btn-square h-12 w-12 bg-base-100 border-base-300 text-warning hover:bg-warning hover:text-warning-content hover:border-warning rounded-2xl hover:rounded-xl shadow-sm transition-all duration-200">
-            <FolderPlus size={20} />
-          </button>
-          
-          <button onClick={onSelectExplorer} title="Explorer" 
-            className={`btn btn-square h-12 w-12 rounded-2xl hover:rounded-xl shadow-sm transition-all duration-200 ${
-              vueActive === 'explorer' 
-                ? 'bg-info text-info-content border-info' 
-                : 'bg-base-100 border-base-300 text-info hover:bg-info hover:text-info-content hover:border-info'
-            }`}>
-            <Globe  size={20} />
-          </button>
-          
+          <div className="w-8 h-px bg-base-content/10 flex-shrink-0 my-2" />
+
+          <div className="flex flex-col gap-2 items-center relative z-10 pb-4 flex-shrink-0">
+            <button onClick={() => setModalOuverte('create')} title="Créer un serveur" 
+              className="btn btn-square h-12 w-12 bg-base-100 border-base-300 text-success hover:bg-success hover:text-success-content hover:border-success rounded-2xl hover:rounded-xl shadow-sm transition-all duration-200">
+              <Plus size={22} />
+            </button>
+            <button onClick={() => setModalOuverte('join')} title="Rejoindre un serveur" 
+              className="btn btn-square h-12 w-12 bg-base-100 border-base-300 text-primary hover:bg-primary hover:text-primary-content hover:border-primary rounded-2xl hover:rounded-xl shadow-sm transition-all duration-200">
+              <SquarePlus size={20} />
+            </button>
+            <button onClick={() => setModalOuverte('folder')} title="Créer un groupe" 
+              className="btn btn-square h-12 w-12 bg-base-100 border-base-300 text-warning hover:bg-warning hover:text-warning-content hover:border-warning rounded-2xl hover:rounded-xl shadow-sm transition-all duration-200">
+              <FolderPlus size={20} />
+            </button>
+            <button onClick={onSelectExplorer} title="Explorer" 
+              className={`btn btn-square h-12 w-12 rounded-2xl hover:rounded-xl shadow-sm transition-all duration-200 ${
+                vueActive === 'explorer' ? 'bg-info text-info-content border-info' : 'bg-base-100 border-base-300 text-info hover:bg-info hover:text-info-content hover:border-info'
+              }`}>
+              <Globe  size={20} />
+            </button>
+          </div>
         </div>
+
+        <div className="mt-auto mb-1 flex flex-col items-center gap-1 cursor-default flex-shrink-0" title={`Latence: ${ping} ms`}>
+           <div className={`w-2 h-2 rounded-full ${ping === null ? 'bg-base-content/20 animate-pulse' : ping < 100 ? 'bg-success shadow-[0_0_8px_rgba(0,169,110,0.5)]' : ping < 300 ? 'bg-warning' : 'bg-error animate-pulse'}`}></div>
+           {ping !== null && (
+             <span className="text-[10px] font-mono font-bold text-base-content/50">
+               {ping} ms
+             </span>
+           )}
+        </div>
+
       </div>
 
       <ModaleCreerServeur
