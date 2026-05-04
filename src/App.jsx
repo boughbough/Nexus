@@ -1443,42 +1443,8 @@ const seConnecter = async (e, captchaToken) => {
     const messageATraiter = nouveauMessage.trim();
     if (!messageATraiter) return;
 
-    const texteFinal = traiterCommande(messageATraiter, ajouterToast);
+    let texteFinal = traiterCommande(messageATraiter, ajouterToast);
     if (texteFinal === null) return;
-
-    if (texteFinal.startsWith('/')) {
-      const args = texteFinal.split(' ');
-      const commande = args[0].toLowerCase();
-      const resteDuTexte = args.slice(1).join(' ');
-
-      if (commande === '/shrug') {
-        texteFinal = resteDuTexte ? (resteDuTexte + ' ¯\\_(ツ)_/¯') : '¯\\_(ツ)_/¯';
-      } 
-      else if (commande === '/roll') {
-        const max = parseInt(args[1]) || 100;
-        const resultat = Math.floor(Math.random() * max) + 1;
-        texteFinal = `🎲 *A lancé un dé (1-${max}) et a obtenu :* **${resultat}**`;
-      } 
-      else if (commande === '/flip') {
-        const resultat = Math.random() < 0.5 ? 'Pile' : 'Face';
-        texteFinal = `🪙 *A lancé une pièce et a obtenu :* **${resultat}**`;
-      }
-      else if (commande === '/8ball') {
-        if (!resteDuTexte) {
-          ajouterToast("Posez une question : /8ball Vais-je devenir riche ?", "info");
-          return;
-        }
-        const reponses = [
-          "C'est certain.", "Sans aucun doute.", "Oui, absolument.", "Tu peux y compter.",
-          "Très probablement.", "Les signes pointent vers oui.", "Essaye plus tard.",
-          "Mieux vaut ne pas te le dire maintenant.", "Concentre-toi et redemande.",
-          "N'y compte pas.", "Ma réponse est non.", "Très douteux."
-        ];
-        const reponseAleatoire = reponses[Math.floor(Math.random() * reponses.length)];
-        texteFinal = `🎱 *Demande à la boule magique :* "${resteDuTexte}"\n> **${reponseAleatoire}**`;
-      }
-      
-    }
 
     const pseudosAmis = amis.map(f => {
       const idAmi = f.requester_id === session.user.id ? f.receiver_id : f.requester_id;
