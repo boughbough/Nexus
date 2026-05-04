@@ -151,6 +151,50 @@ const MessageItem = memo(({
   const estMentionne = msg.mentions?.includes(monPseudoAffiche);
 
 
+  // AJOUTE CE BLOC JUSTE AVANT LE "return (" :
+
+  const markdownComponents = React.useMemo(() => ({
+    p: ({node, children, ...props}) => {
+      const renderInlineEffects = (content) => {
+        if (typeof content !== 'string') return content;
+        const parts = content.split(/\|\|(.*?)\|\|/g);
+        return parts.map((part, i) => {
+          if (i % 2 === 1) {
+            return <Spoiler key={`sp-${i}`} texte={part} />;
+          }
+          const mentionParts = part.split(/(@\w+)/g);
+          return mentionParts.map((mPart, j) => {
+            if (mPart.startsWith('@')) {
+              const pseudoMention = mPart.slice(1);
+              const estMoi = pseudoMention === monPseudoAffiche;
+              return (
+                <span key={`mt-${i}-${j}`} className={`inline-flex items-baseline rounded px-1 py-0.5 mx-0.5 transition-colors ${
+                  estMoi 
+                    ? 'bg-success/40 text-success-content ring-1 ring-success/50'
+                    : isMyMessage 
+                    ? 'bg-white/30 text-white shadow-sm' 
+                    : 'text-primary bg-primary/10 hover:bg-primary/20'
+                }`}>
+                  <span className="opacity-70 font-medium">@</span>
+                  <span className="font-black">{pseudoMention}</span>
+                </span>
+              );
+            }
+            return mPart;
+          });
+        });
+      };
+      return (
+        <div className="mb-2 last:mb-0" {...props}>
+          {React.Children.map(children, child => renderInlineEffects(child))}
+        </div>
+      );
+    },
+    a: ({node, ...props}) => <a className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer" {...props} />,
+    code: ({node, inline, ...props}) => inline 
+      ? <code className="bg-base-300 text-primary px-1.5 py-0.5 rounded text-sm font-mono" {...props} />
+      : <code className="block bg-base-300 p-3 rounded-xl text-sm font-mono overflow-x-auto my-2 border border-base-200 shadow-inner" {...props} />
+  }), [monPseudoAffiche, isMyMessage]);
 
   return (
     <div ref={el => { if (el) messagesRefsMap.current[msg.id] = el; else delete messagesRefsMap.current[msg.id]; }} className={`animate-message group w-full px-4 py-1 transition-colors ${messageEnEdition === msg.id ? 'bg-base-200/50' : ''}`}>
@@ -195,12 +239,12 @@ const MessageItem = memo(({
                 }`
           }`}
             onContextMenu={(e) => {
-  if (interactionInterdite) {
-    e.preventDefault();
-    return;
-  }
-  if (ouvrirMenuContextuel) ouvrirMenuContextuel(e, msg);
-}}>
+              if (interactionInterdite) {
+                e.preventDefault();
+                return;
+              }
+              if (ouvrirMenuContextuel) ouvrirMenuContextuel(e, msg);
+            }}>
             {msg.reply_to_id && (
               <div
                 onClick={() => messageParent && allerAuMessage(messageParent.id, salonActuel)}
@@ -260,52 +304,7 @@ const MessageItem = memo(({
                 <div className="text-[15px] leading-relaxed text-base-content/90 break-words">
                   {msg.content ? (
                     <>
-                      <ReactMarkdown components={{
-                        p: ({node, children, ...props}) => {
-                          const renderInlineEffects = (content) => {
-                            if (typeof content !== 'string') return content;
-                            
-                            const parts = content.split(/\|\|(.*?)\|\|/g);
-                            
-                            return parts.map((part, i) => {
-                              if (i % 2 === 1) {
-                                return <Spoiler key={`sp-${i}`} texte={part} />;
-                              }
-                              
-                              const mentionParts = part.split(/(@\w+)/g);
-                              return mentionParts.map((mPart, j) => {
-                                if (mPart.startsWith('@')) {
-                                  const pseudoMention = mPart.slice(1);
-                                  const estMoi = pseudoMention === monPseudoAffiche;
-                                  return (
-                                    <span key={`mt-${i}-${j}`} className={`inline-flex items-baseline rounded px-1 py-0.5 mx-0.5 transition-colors ${
-                                      estMoi 
-                                        ? 'bg-success/40 text-success-content ring-1 ring-success/50'
-                                        : isMyMessage 
-                                        ? 'bg-white/30 text-white shadow-sm' 
-                                        : 'text-primary bg-primary/10 hover:bg-primary/20'
-                                    }`}>
-                                      <span className="opacity-70 font-medium">@</span>
-                                      <span className="font-black">{pseudoMention}</span>
-                                    </span>
-                                  );
-                                }
-                                return mPart;
-                              });
-                            });
-                          };
-
-                          return (
-                            <div className="mb-2 last:mb-0" {...props}>
-                              {React.Children.map(children, child => renderInlineEffects(child))}
-                            </div>
-                          );
-                        },
-                        a: ({node, ...props}) => <a className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer" {...props} />,
-                        code: ({node, inline, ...props}) => inline 
-                          ? <code className="bg-base-300 text-primary px-1.5 py-0.5 rounded text-sm font-mono" {...props} />
-                          : <code className="block bg-base-300 p-3 rounded-xl text-sm font-mono overflow-x-auto my-2 border border-base-200 shadow-inner" {...props} />
-                      }}>
+                      <ReactMarkdown components={markdownComponents}>
                         {msg.content}
                       </ReactMarkdown>
                       
