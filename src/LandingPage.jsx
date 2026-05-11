@@ -105,7 +105,7 @@ export default function LandingPage({
       </div>
 
       <div className="absolute bottom-6 left-6 z-30 text-xs text-base-content/30 lp-fade-up lp-fade-up-d5">
-        © {new Date().getFullYear()} Nexus
+        © {new Date().getFullYear()} Nexus | Tous droits réservés <br/> Mohamed Boughmadi 
       </div>
 
       <div
